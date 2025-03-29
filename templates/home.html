@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 100vh;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 0 40px;
+        }
+        
+        .right-panel {
+            display: flex;
+            flex-direction: column; /* Change la disposition en verticale */
+            justify-content: center; /* Centre verticalement les éléments */
+            align-items: center; /* Centre horizontalement les éléments */
+            padding: 40px;
+        }
+        
+        .photos-container {
+            display: flex;
+            position: relative;
+            height: 120px;
+            width: 100%;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        
+        .photo-frame {
+            width: 120px;
+            height: 120px;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+            position: absolute;
+            z-index: 2;
+        }
+        
+        .photo-frame:first-child {
+            transform: translateX(-30px) rotate(-5deg);
+            left: 25%;
+        }
+        
+        .photo-frame:last-child {
+            transform: translateX(30px) rotate(5deg);
+            right: 25%;
+        }
+        
+        .photo-frame:hover {
+            transform: scale(1.1) rotate(0);
+            border-color: rgba(255, 255, 255, 0.8);
+            z-index: 3;
+        }
+        
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .photo-frame:hover img {
+            transform: scale(1.1);
+        }
+        
+        .dynamic-text-container {
+            text-align: center;
+            perspective: 800px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .dynamic-text {
+            font-size: 2.2rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff00cc, #3333ff, #00ffcc, #ffcc00);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textGradient 5s ease infinite, textShadow 3s ease infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            transform-style: preserve-3d;
+            transform: rotateX(10deg);
+        }
+        
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes textShadow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+            50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 255, 255, 0.5); }
+            100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+        }
+        
+        h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+        
+        button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+            animation: pulseButton 2s infinite;
+        }
+        
+        button:hover {
+            background: white;
+            color: #1a2a6c;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: none;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            transform: perspective(1000px) rotateX(5deg);
+            transition: all 0.5s ease;
+        }
+        
+        .video-container:hover {
+            transform: perspective(1000px) rotateX(0deg) scale(1.05);
+        }
+        
+        .video-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .description-container {
+            width: 100%;
+            max-width: 700px; /* Limite la largeur pour une lisibilité optimale */
+            text-align: center;
+            margin-top: 30px; /* Espace entre la vidéo et la description */
+            padding: 20px 30px; /* Espacement interne pour un effet "encadré" */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); /* Fond dégradé subtil */
+            border-radius: 15px; /* Coins arrondis pour une touche moderne */
+            backdrop-filter: blur(10px); /* Effet de flou d’arrière-plan */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2); /* Ombre externe et lueur interne */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Bordure lumineuse */
+            position: relative;
+            overflow: hidden; /* Pour gérer les effets internes */
+            animation: fadeInUp 1.5s ease-in-out; /* Animation d’entrée */
+        }
+        
+        .description-container p {
+            font-size: 1.5rem; /* Taille de police plus grande pour capter l’attention */
+            font-family: 'Segoe UI', 'Arial', sans-serif; /* Police moderne */
+            font-weight: 500; /* Légère épaisseur pour de l’élégance */
+            color: #ffffff; /* Blanc pour contraster avec le fond */
+            background: linear-gradient(90deg, #f4b7d6, #b3c6ff, #b2f7e2, #f7e4b7);            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent; /* Applique le dégradé au texte */
+            animation: textGradient 6s ease infinite; /* Animation fluide du dégradé */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);            letter-spacing: 1px; /* Espacement des lettres pour un look raffiné */
+            line-height: 1.6; /* Hauteur de ligne pour lisibilité */
+        }
+        
+        /* Effet de surbrillance au survol */
+        .description-container:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(255, 255, 255, 0.3); /* Ombre plus intense */
+            border: 1px solid rgba(255, 255, 255, 0.6); /* Bordure plus lumineuse */
+        }
+        
+        /* Pseudo-élément pour un effet de lueur animée */
+        .description-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 50%);
+            opacity: 0.5;
+            animation: glowRotate 8s linear infinite; /* Rotation lente de la lueur */
+            pointer-events: none; /* Ne bloque pas les interactions */
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes glowRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        .video-container::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+            filter: blur(5px);
+        }
+        
+        .video-container video, .video-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px) rotate(360deg); opacity: 0; }
+        }
+        
+        @keyframes pulseButton {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .glow-effect {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            mix-blend-mode: overlay;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                height: 100vh;
+                overflow-y: auto;
+            }
+            
+            .left-panel, .right-panel {
+                padding: 20px;
+                height: auto;
+            }
+            
+            .left-panel {
+                min-height: 50vh;
+                justify-content: flex-start;
+                padding-top: 40px;
+            }
+            
+            .right-panel {
+                min-height: 50vh;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .dynamic-text {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div id="glow" class="glow-effect"></div>
+    
+    <div class="content-wrapper">
+        <div class="left-panel">
+            <div class="photos-container">
+                <div class="photo-frame">
+                    <img src="{{ url_for('static', filename='images/olivier.jpg') }}" alt="Photo 1" />
+                </div>
+                
+                <div class="photo-frame">
+                    <img src="{{ url_for('static', filename='images/richard.jpg') }}" alt="Photo 2" />
+                </div>
+            </div>
+            
+            <div class="dynamic-text-container">
+                <h2 class="dynamic-text" id="dynamic-text">Une Expérience Immersive</h2>
+            </div>
+            
+            <h1>Bienvenue dans le Futur</h1>
+            <button id="index">
+                Découvrir
+            </button>
+        </div>
+        
+        <div class="right-panel">
+            <div class="video-container">
+                <video controls autoplay muted loop>
+                    <source src="{{ url_for('static', filename='video/youtube.mp4') }}" type="video/mp4">
+                    Votre navigateur ne prend pas en charge la lecture de vidéos.
+                </video>
+            </div>
+            <div class="description-container">
+                <p>
+                    Cette application innovante explore YouTube pour scraper des données sur vos YouTubeurs préférés. Entrez simplement un nom et rejoignez notre univers !
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Animation des particules
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Taille aléatoire
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Position aléatoire
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                
+                // Vitesse aléatoire
+                const duration = Math.random() * 15 + 10;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Délai aléatoire
+                const delay = Math.random() * 5;
+                particle.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // Texte dynamique changeant
+        function animateText() {
+            const textElement = document.getElementById('dynamic-text');
+            const texts = [
+                "Une Expérience Immersive",
+                "Design Révolutionnaire",
+                "Le Futur est Maintenant",
+                "Préparez-vous à être Émerveillé",
+                "Une Interface d'Exception"
+            ];
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % texts.length;
+                textElement.style.opacity = 0;
+                
+                setTimeout(() => {
+                    textElement.textContent = texts[currentIndex];
+                    textElement.style.opacity = 1;
+                }, 500);
+            }, 3000);
+        }
+        
+        // Effet de lueur suivant la souris
+        function moveGlow(e) {
+            const glow = document.getElementById('glow');
+            glow.style.opacity = 1;
+            glow.style.left = `${e.clientX - 75}px`;
+            glow.style.top = `${e.clientY - 75}px`;
+        }
+        
+        function hideGlow() {
+            document.getElementById('glow').style.opacity = 0;
+        }
+        
+        // Créer les particules et démarrer les animations au chargement
+        window.addEventListener('load', () => {
+            createParticles();
+            animateText();
+            
+            // Ajouter effets de souris
+            document.addEventListener('mousemove', moveGlow);
+            document.addEventListener('mouseleave', hideGlow);
+        });
+        
+        // Redirection
+        document.getElementById("index").onclick = function () {
+            // Animation avant redirection
+            this.innerHTML = "Chargement...";
+            this.style.width = "200px";
+            
+            // Effets supplémentaires avant redirection
+            document.querySelectorAll('.photo-frame').forEach(frame => {
+                frame.style.transform = "scale(0.8) translateY(-100px)";
+                frame.style.opacity = 0;
+            });
+            
+            document.getElementById('dynamic-text').style.transform = "scale(1.5) rotateX(90deg)";
+            document.getElementById('dynamic-text').style.opacity = 0;
+            
+            // Animation de la vidéo
+            document.querySelector('.video-container').style.transform = "scale(1.2) translateY(50px)";
+            document.querySelector('.video-container').style.opacity = 0;
+            
+            // Redirection après délai
+            setTimeout(function() {
+                window.location.href = "/youtube";
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

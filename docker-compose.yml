@@ -1,0 +1,114 @@
+services:
+  flask:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=development
+      - DB_HOST=db
+      - DB_NAME=db_youtube_scrapper
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    command: python app.py
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+    shm_size: 2g
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=db_youtube_scrapper
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    networks:
+      - app-network
+
+  celery:
+    build: .
+    command: >
+      sh -c "celery -A app.celery worker --loglevel=info & celery -A app.celery flower --port=5555"
+    depends_on:
+      - flask
+      - redis
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db_youtube_scrapper
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    networks:
+      - app-network
+
+  celery-beat:
+    build: .
+    command: celery -A app.celery beat --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db_youtube_scrapper
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+    networks:
+      - app-network
+    
+  celery-exporter:
+    build: .
+    command: celery-prometheus-exporter --broker=redis://redis:6379/0 --addr=0.0.0.0:8888
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  prometheus-data:
+  grafana-data:

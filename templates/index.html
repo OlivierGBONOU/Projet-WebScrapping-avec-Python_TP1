@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Music Scraper</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Variables CSS pour le thème sombre (par défaut) */
+        :root {
+            --primary-color: #FF0000; /* Rouge YouTube signature */
+            --secondary-color: #CC0000; /* Rouge secondaire pour meilleur contraste */
+            --background-color: #0F0F0F; /* Fond noir officiel YouTube */
+            --background-secondary-color: #181818; /* Gris très foncé pour les cartes/sections */
+            --text-color: #FFFFFF; /* Texte blanc */
+            --text-secondary-color: #AAAAAA; /* Gris clair officiel pour textes secondaires */
+            --border-color: #303030; /* Couleur de bordure officielle */
+            --card-background: #212121; /* Fond de carte officiel */
+            --shadow-color: rgba(0, 0, 0, 0.4); /* Ombre plus subtile */
+            --hover-background: #272727; /* Couleur au survol des éléments */
+            --glass-blur: 10px; /* Niveau de flou pour l'effet glassmorphism */
+            --glass-opacity: 0.1; /* Opacité pour l'effet glassmorphism */
+        }
+
+        /* Variables CSS pour le thème clair */
+        .light-theme {
+            --primary-color: #FF0000; /* Rouge YouTube signature (inchangé) */
+            --secondary-color: #CC0000; /* Rouge secondaire plus foncé */
+            --background-color: #FFFFFF; /* Fond blanc principal */
+            --background-secondary-color: #F9F9F9; /* Gris très léger officiel */
+            --text-color: #030303; /* Noir officiel YouTube */
+            --text-secondary-color: #606060; /* Gris officiel pour texte secondaire */
+            --border-color: #E5E5E5; /* Bordure gris clair officielle */
+            --card-background: #FFFFFF; /* Fond de carte blanc */
+            --shadow-color: rgba(0, 0, 0, 0.1); /* Ombre très légère */
+            --hover-background: #F2F2F2; /* Couleur au survol des éléments */
+            --glass-blur: 10px; /* Niveau de flou pour l'effet glassmorphism */
+            --glass-opacity: 0.8; /* Opacité pour l'effet glassmorphism */
+        }
+
+        /* Styles généraux */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            position: relative;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            padding-top: 24px;
+            padding-bottom: 40px;
+        }
+
+        /* Carte principale avec morphisme */
+        .main-card {
+            background-color: rgba(var(--card-background), var(--glass-opacity));
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+        }
+
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 36px var(--shadow-color);
+        }
+
+        /* En-tête de la carte */
+        .card-header {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-bottom: none;
+            position: relative;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .card-header h2 {
+            font-weight: 500;
+            margin: 0;
+            font-size: 1.8rem;
+            position: relative;
+            color: white;
+        }
+
+        /* Corps de la carte */
+        .card-body {
+            padding: 20px;
+            background-color: var(--card-background);
+            transition: background-color 0.3s;
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* Formulaire */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            background-color: rgba(var(--background-color), 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px 15px;
+            font-size: 1rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background-color: var(--background-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+            color: var(--text-color);
+            transform: translateY(-2px);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary-color);
+        }
+
+        /* Boutons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #D00000;
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active, .btn-primary:focus {
+            background-color: #AA0000;
+            box-shadow: 0 2px 10px rgba(255, 0, 0, 0.5);
+            transform: translateY(0);
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(var(--background-secondary-color), 0.3);
+            border-left: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 24px auto;
+            display: none;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Résultats */
+        #results {
+            margin-top: 30px;
+        }
+
+        /* Cartes vidéo avec morphisme */
+        .video-card {
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .video-card .card {
+            background-color: rgba(var(--card-background), 0.7);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100%;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .card {
+            background-color: var(--hover-background);
+            transform: translateY(-7px);
+            box-shadow: 0 10px 25px var(--shadow-color);
+        }
+
+        .video-card .card-body {
+            padding: 16px;
+            background-color: transparent;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .video-card:hover .card-body {
+            background-color: transparent;
+        }
+
+        .video-card .card-title {
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.8rem;
+            color: var(--text-color);
+        }
+
+        .video-stats {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .video-stat {
+            display: flex;
+            align-items: center;
+            margin-right: 12px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary-color);
+            padding: 5px 10px;
+            background-color: rgba(var(--background-secondary-color), 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 20px;
+        }
+
+        .video-stat i {
+            margin-right: 4px;
+            color: var(--text-secondary-color);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            margin-bottom: 12px;
+            overflow: hidden;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .video-thumbnail img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .video-card:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .play-button:hover {
+            background-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        /* Cartes artiste avec morphisme */
+        .artist-card {
+            margin-bottom: 30px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px var(--shadow-color);
+            background-color: rgba(var(--card-background), 0.7);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            position: relative;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .artist-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 15px 35px var(--shadow-color);
+        }
+
+        .artist-cover {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .artist-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .artist-card:hover .artist-cover img {
+            transform: scale(1.05);
+        }
+
+        .artist-info {
+            padding: 25px 16px 16px;
+            position: relative;
+        }
+
+        .artist-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            overflow: hidden;
+            position: absolute;
+            top: -45px;
+            left: 16px;
+            z-index: 2;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .artist-card:hover .artist-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        .artist-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .artist-details {
+            margin-left: 100px;
+            margin-bottom: 16px;
+        }
+
+        .artist-name {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+
+        .artist-stats {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .artist-stat {
+            background-color: rgba(var(--background-secondary-color), 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 12px;
+            padding: 8px 15px;
+            margin-right: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .artist-stat:hover {
+            background-color: rgba(var(--primary-color), 0.1);
+            transform: translateY(-2px);
+        }
+
+        .artist-stat i {
+            color: var(--text-secondary-color);
+            margin-right: 6px;
+        }
+
+        /* Alertes avec morphisme */
+        .alert {
+            background: rgba(var(--background-secondary-color), 0.3);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 24px;
+            color: var(--text-color);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .alert-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-info {
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* En-tête de section */
+        .section-header {
+            margin: 30px 0 16px;
+            position: relative;
+        }
+
+        .section-header h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+            position: relative;
+            padding-left: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .section-header hr {
+            border-top: 1px solid var(--border-color);
+            margin-top: 16px;
+            opacity: 0.5;
+        }
+
+        /* Bouton de recherche */
+        .search-btn {
+            position: relative;
+        }
+
+        /* Barre de défilement personnalisée */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(96, 96, 96, 0.7);
+            border-radius: 10px;
+            border: 2px solid var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(144, 144, 144, 0.7);
+        }
+
+        /* Bouton secondaire */
+        .btn-secondary {
+            background-color: rgba(var(--background-secondary-color), 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--hover-background);
+            color: var(--text-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+
+        .btn-secondary:active, .btn-secondary:focus {
+            background-color: var(--hover-background);
+            color: var(--text-color);
+            transform: translateY(0);
+        }
+    </style>
+    <!-- Bibliothèques pour les visualisations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+</head>
+<body class="light-theme">
+    <!-- YouTube-like notification dot -->
+    <div class="youtube-dot"></div>
+    
+    <div class="container">
+        <div id="notification" class="alert" style="display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000;"></div>
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="main-card">
+                    <div class="card-header">
+                        <h2 class="text-center"><i class="fab fa-youtube me-2"></i>YouTube Artist Explorer</h2>
+                        <button id="themeToggle" class="btn btn-secondary btn-sm position-absolute top-0 end-0 m-3">
+                            <i class="fas fa-moon"></i> Thème sombre
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm">
+                            <div class="mb-4">
+                                <label for="artist" class="form-label"><i class="fas fa-music me-2"></i>Nom de l'artiste</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-danger"></i></span>
+                                    <input type="text" class="form-control" id="artist" name="artist" placeholder="Rechercher un artiste..." required autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary search-btn">
+                                    <i class="fas fa-search me-2"></i>Découvrir
+                                </button>
+                                <button type="button" id="visualizationBtn" class="btn btn-secondary">
+                                    <i class="fas fa-chart-bar me-2"></i>Visualisation
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="loader" id="loader"></div>
+                        
+                        <div id="status" class="alert mt-3" style="display: none;"></div>
+                        
+                        <div id="results" class="row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const body = document.body;
+            const themeToggleButton = document.getElementById('themeToggle');
+        
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                themeToggleButton.innerHTML = '<i class="fas fa-sun"></i> Thème clair';
+            } else {
+                body.classList.add('light-theme');
+                themeToggleButton.innerHTML = '<i class="fas fa-moon"></i> Thème sombre';
+            }
+        });
+
+        document.getElementById('visualizationBtn').addEventListener('click', function() {
+            const visualizationSection = document.getElementById('visualizationSection');
+            if (visualizationSection) {
+                visualizationSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const artist = document.getElementById('artist').value;
+            const loader = document.getElementById('loader');
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            resultsDiv.innerHTML = '';
+            statusDiv.style.display = 'none';
+            loader.style.display = 'block';
+            
+            const btn = document.querySelector('.search-btn');
+            btn.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                btn.classList.remove('animate__animated', 'animate__pulse');
+            }, 1000);
+            
+            fetch('/youtube/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'artist': artist
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                if (data.task_id) {
+                    pollTaskStatus(data.task_id);
+                } else {
+                    displayResults(data);
+                }
+            })
+            .catch(error => {
+                showError('Une erreur est survenue: ' + error);
+            });
+        });
+
+        function pollTaskStatus(taskId) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'alert alert-info mt-3';
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Recherche en cours... Découverte de l\'artiste et de ses œuvres.';
+            
+            const pollInterval = setInterval(() => {
+                fetch(`/youtube/task/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'PENDING' || data.status === 'STARTED') {
+                        return;
+                    }
+                    
+                    clearInterval(pollInterval);
+                    
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    displayResults(data);
+                })
+                .catch(error => {
+                    clearInterval(pollInterval);
+                    showError('Une erreur est survenue: ' + error);
+                });
+            }, 2000);
+        }
+        
+        function displayResults(data) {
+            const loader = document.getElementById('loader');
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            loader.style.display = 'none';
+            
+            if (!data || (!data.Titre || data.Titre.length === 0)) {
+                statusDiv.className = 'alert alert-warning mt-3';
+                statusDiv.style.display = 'block';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Aucun résultat trouvé.';
+                return;
+            }
+            
+            // Artist banner
+            if (data['Photo Banniere']) {
+                const bannerDiv = document.createElement('div');
+                bannerDiv.className = 'col-12 mb-4';
+                bannerDiv.innerHTML = `
+                    <div class="artist-card">
+                        <div class="artist-cover">
+                            <img src="${data['Photo Banniere']}" alt="Bannière de ${data.Nom}">
+                        </div>
+                        <div class="artist-info">
+                            <div class="artist-avatar">
+                                <img src="${data['Photo'] || 'https://via.placeholder.com/300x300'}" alt="${data.Nom}">
+                            </div>
+                            <div class="artist-details">
+                                <h3 class="artist-name">${data.Nom || 'Artiste'}</h3>
+                                <div class="artist-stats">
+                                    <div class="artist-stat">
+                                        <i class="fas fa-users"></i> ${data['Nombre abonné'] || 'N/A'} abonnés
+                                    </div>
+                                    <div class="artist-stat">
+                                        <i class="fas fa-video"></i> ${data.Titre ? data.Titre.length : 0} vidéos
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.appendChild(bannerDiv);
+            } else {
+                // Fallback if there's no banner
+                const artistInfoDiv = document.createElement('div');
+                artistInfoDiv.className = 'col-12 mb-4';
+                artistInfoDiv.innerHTML = `
+                    <div class="artist-card">
+                        <div class="artist-info" style="padding-top: 80px;">
+                            <div class="artist-avatar">
+                                <img src="${data['Photo'] || 'https://via.placeholder.com/300x300'}" alt="${data.Nom}">
+                            </div>
+                            <div class="artist-details">
+                                <h3 class="artist-name">${data.Nom || 'Artiste'}</h3>
+                                <div class="artist-stats">
+                                    <div class="artist-stat">
+                                        <i class="fas fa-users"></i> ${data['Nombre abonné'] || 'N/A'} abonnés
+                                    </div>
+                                    <div class="artist-stat">
+                                        <i class="fas fa-video"></i> ${data.Titre ? data.Titre.length : 0} vidéos
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.appendChild(artistInfoDiv);
+            }
+            
+            const videosSectionTitle = document.createElement('div');
+            videosSectionTitle.className = 'col-12';
+            videosSectionTitle.innerHTML = `
+                <div class="section-header">
+                    <h3><i class="fas fa-play-circle me-2"></i>Vidéos (${data.Titre ? data.Titre.length : 0})</h3>
+                    <hr>
+                </div>
+            `;
+            resultsDiv.appendChild(videosSectionTitle);
+            
+            statusDiv.className = 'alert alert-success mt-3';
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>${data.Titre ? data.Titre.length : 0} vidéos trouvées pour <strong>${data.Nom || 'cet artiste'}</strong>.`;
+            
+            if (data.Titre && Array.isArray(data.Titre)) {
+                // Create a structured grid for videos
+                for (let i = 0; i < data.Titre.length; i++) {
+                    // Generate a random placeholder image for the video thumbnail
+                    const thumbnailIndex = Math.floor(Math.random() * 10) + 1;
+                    const thumbnailUrl = `/api/placeholder/${400 + i % 5 * 10}/${300 + i % 3 * 10}`;
+                    
+                    const videoCard = document.createElement('div');
+                    videoCard.className = 'col-md-4 video-card';
+                    videoCard.style.animationDelay = `${i * 0.1}s`;
+                    
+                    videoCard.innerHTML = `
+                        <div class="card h-100">
+                            <div class="video-thumbnail">
+                                <img src="${data['Video Image'] && data['Video Image'][i] ? data['Video Image'][i] : thumbnailUrl}" alt="${data.Titre[i] || 'Vidéo'}">
+                                <div class="video-overlay">
+                                    <a href="${data.Lien && data.Lien[i] ? data.Lien[i] : '#'}" class="play-button" target="_blank">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${data.Titre[i] || 'Titre non disponible'}</h5>
+                                <div class="video-stats">
+                                    <div class="video-stat">
+                                        <i class="fas fa-eye"></i> ${data.Vues && data.Vues[i] ? data.Vues[i] : 'N/A'}
+                                    </div>
+                                    <div class="video-stat">
+                                        <i class="fas fa-clock"></i> ${data['Publié depuis'] && data['Publié depuis'][i] ? data['Publié depuis'][i] : 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    resultsDiv.appendChild(videoCard);
+                }
+            }
+            addVisualizationsSection(data, resultsDiv);
+        }
+        // Ajouter cette nouvelle fonction après displayResults
+        function addVisualizationsSection(data, resultsDiv) {
+            // Section de visualisations
+            const visualizationSection = document.createElement('div');
+            visualizationSection.className = 'col-12 mt-4';
+            visualizationSection.setAttribute('id', 'visualizationSection');
+            visualizationSection.innerHTML = `
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistiques et Visualisations</h3>
+                    <hr>
+                </div>
+            `;
+            resultsDiv.appendChild(visualizationSection);
+
+            // Création des cartes pour chaque visualisation
+            const statsRow = document.createElement('div');
+            statsRow.className = 'row';
+
+            // 1. Carte pour le titre le plus vu
+            let maxViewsIndex = 0;
+            let maxViews = 0;
+            if (data.Vues && Array.isArray(data.Vues)) {
+                for (let i = 0; i < data.Vues.length; i++) {
+                    const views = parseInt(String(data.Vues[i]).replace(/\D/g, ''));
+                    if (views > maxViews) {
+                        maxViews = views;
+                        maxViewsIndex = i;
+                    }
+                }
+            }
+
+            const mostViewedCard = document.createElement('div');
+            mostViewedCard.className = 'col-md-6 mb-4';
+            mostViewedCard.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Titre le plus vu</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="text-center mb-3">
+                            <a href="${data.Lien && data.Lien[maxViewsIndex] ? data.Lien[maxViewsIndex] : '#'}" target="_blank">
+                                ${data.Titre && data.Titre[maxViewsIndex] ? data.Titre[maxViewsIndex] : 'Non disponible'}
+                            </a>
+                        </h4>
+                        <p class="text-center fs-4 fw-bold">${data.Vues && data.Vues[maxViewsIndex] ? data.Vues[maxViewsIndex] : 'N/A'} vues</p>
+                    </div>
+                </div>
+            `;
+
+            // 2. Carte pour le ratio Vues/Abonnés
+            let totalViews = 0;
+            if (data.Vues && Array.isArray(data.Vues)) {
+                for (let i = 0; i < data.Vues.length; i++) {
+                    totalViews += parseInt(String(data.Vues[i]).replace(/\D/g, '')) || 0;
+                }
+            }
+            const subscribers = parseInt(String(data['Nombre abonné']).replace(/\D/g, '')) || 1;
+            const ratio = totalViews / (data.Vues.length * subscribers);
+            let ratioComment = '';
+
+            if (ratio > 1) {
+                ratioComment = 'L\'artiste est connu au delà de son espace d\'abonnés';
+            } else if (ratio < 1) {
+                ratioComment = 'L\'artiste a une base d\'abonnés qui ne regarde pas systématiquement ses vidéos';
+            }
+
+            const ratioCard = document.createElement('div');
+            ratioCard.className = 'col-md-6 mb-4';
+            ratioCard.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Ratio Vues/Abonnés</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="text-center mb-3">${ratio.toFixed(2)}</h4>
+                        <p class="text-center">${ratioComment}</p>
+                    </div>
+                </div>
+            `;
+
+            statsRow.appendChild(mostViewedCard);
+            statsRow.appendChild(ratioCard);
+            resultsDiv.appendChild(statsRow);
+
+            // Rangée pour les graphiques
+            const chartsRow = document.createElement('div');
+            chartsRow.className = 'row';
+
+            // 3. Graphiques des 10 chansons les plus/moins vues
+            const topVideosCard = document.createElement('div');
+            topVideosCard.className = 'col-md-12 mb-4';
+            topVideosCard.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Top 10 Vidéos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="topViewsChart" height="300"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="leastViewsChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chartsRow.appendChild(topVideosCard);
+
+            // 4. Histogramme pour la répartition des vues par année
+            const yearHistogramCard = document.createElement('div');
+            yearHistogramCard.className = 'col-md-6 mb-4';
+            yearHistogramCard.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Vues Moyennes par Année</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="yearHistogram" height="300"></canvas>
+                    </div>
+                </div>
+            `;
+
+            // 5. Nuage de mots
+            const videosPerYearCard = document.createElement('div');
+            videosPerYearCard.className = 'col-md-6 mb-4';
+            videosPerYearCard.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Vidéos par Année</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="videosPerYearChart" height="300"></canvas>
+                    </div>
+                </div>
+            `;
+            const wordCloudCard = document.createElement('div');
+            wordCloudCard.className = 'col-md-12 mb-4';
+            wordCloudCard.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-cloud me-2"></i>Nuage de Mots des Titres</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="wordCloud" style="width: 100%; height: 400px;"></div>
+                    </div>
+                </div>
+            `;
+
+            chartsRow.appendChild(yearHistogramCard);
+            chartsRow.appendChild(videosPerYearCard);
+            chartsRow.appendChild(wordCloudCard);
+            resultsDiv.appendChild(chartsRow);
+
+            // IMPORTANT: Attendez que le DOM soit mis à jour avant de créer les graphiques
+            setTimeout(() => {
+                try {
+                    createTopViewsCharts(data);
+                    createYearHistogram(data);
+                    createVideosPerYearChart(data);
+                    createWordCloud(data); 
+                } catch (error) {
+                    console.error("Erreur lors de la création des visualisations:", error);
+                }
+            }, 500);
+
+        }
+        function showError(message) {
+            const loader = document.getElementById('loader');
+            const statusDiv = document.getElementById('status');
+            
+            loader.style.display = 'none';
+            statusDiv.className = 'alert alert-danger mt-3';
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = message;
+        }
+
+        function createVideosPerYearChart(data) {
+            if (!data['Publié depuis'] || !Array.isArray(data['Publié depuis'])) {
+                console.error("Données manquantes pour le graphique du nombre de vidéos par année");
+                return;
+            }
+            
+            // Regrouper les vidéos par année
+            const yearCounts = {};
+            for (let i = 0; i < data['Publié depuis'].length; i++) {
+                const year = data['Publié depuis'][i];
+                if (!year) continue;
+                
+                if (!yearCounts[year]) {
+                    yearCounts[year] = 0;
+                }
+                
+                yearCounts[year]++;
+            }
+            
+            // Préparer les données pour le graphique
+            const years = Object.keys(yearCounts).sort();
+            const videoCounts = years.map(year => yearCounts[year]);
+            
+            const ctx = document.getElementById('videosPerYearChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Nombre de vidéos',
+                            data: videoCounts,
+                            backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        // Fonctions pour créer les graphiques
+        function createTopViewsCharts(data) {
+            if (!data.Titre || !data.Vues || !Array.isArray(data.Titre) || !Array.isArray(data.Vues)) {
+                console.error("Données manquantes pour les graphiques top/bottom");
+                return;
+            }
+            
+            // Préparation des données
+            const viewsData = [];
+            for (let i = 0; i < data.Titre.length; i++) {
+                viewsData.push({
+                    title: data.Titre[i],
+                    views: parseInt(String(data.Vues[i]).replace(/\D/g, '')) || 0
+                });
+            }
+            
+            // Trier par nombre de vues
+            viewsData.sort((a, b) => b.views - a.views);
+            
+            // Top 10
+            const top10 = viewsData.slice(0, 10);
+            const topLabels = top10.map(item => truncateString(item.title, 20));
+            const topData = top10.map(item => item.views);
+            
+            // Bottom 10
+            const bottom10 = [...viewsData].sort((a, b) => a.views - b.views).slice(0, 10);
+            const bottomLabels = bottom10.map(item => truncateString(item.title, 20));
+            const bottomData = bottom10.map(item => item.views);
+            
+            // Graphique des plus vues
+            const topCtx = document.getElementById('topViewsChart');
+            if (topCtx) {
+                new Chart(topCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topLabels,
+                        datasets: [{
+                            label: 'Nombre de vues',
+                            data: topData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top 10 Vidéos les Plus Vues'
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatNumber(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Graphique des moins vues
+            const bottomCtx = document.getElementById('leastViewsChart');
+            if (bottomCtx) {
+                new Chart(bottomCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: bottomLabels,
+                        datasets: [{
+                            label: 'Nombre de vues',
+                            data: bottomData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top 10 Vidéos les Moins Vues'
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatNumber(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function createYearHistogram(data) {
+            if (!data['Publié depuis'] || !data.Vues || !Array.isArray(data['Publié depuis']) || !Array.isArray(data.Vues)) {
+                console.error("Données manquantes pour l'histogramme par année");
+                return;
+            }
+            
+            // Regrouper les vues par année
+            const yearData = {};
+            for (let i = 0; i < data['Publié depuis'].length; i++) {
+                const year = data['Publié depuis'][i];
+                if (!year) continue;
+                
+                const views = parseInt(String(data.Vues[i]).replace(/\D/g, '')) || 0;
+                
+                if (!yearData[year]) {
+                    yearData[year] = { totalViews: 0, count: 0 };
+                }
+                
+                yearData[year].totalViews += views;
+                yearData[year].count++;
+            }
+            
+            // Calculer les moyennes et préparer les données pour le graphique
+            const years = Object.keys(yearData).sort();
+            const avgViews = years.map(year => Math.round(yearData[year].totalViews / yearData[year].count));
+            
+            const ctx = document.getElementById('yearHistogram');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Vues moyennes',
+                            data: avgViews,
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatNumber(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function createWordCloud(data) {
+            if (!data.Titre || !Array.isArray(data.Titre)) {
+                console.error("Données manquantes pour le nuage de mots");
+                return;
+            }
+            
+            const cloudContainer = document.getElementById('wordCloud');
+            if (!cloudContainer) {
+                console.error("Conteneur du nuage de mots introuvable");
+                return;
+            }
+            
+            const titleText = data.Titre.join(' ');
+            const stopWords = ["le", "feat", "ft", "la", "les", "un", "une", "des", "et", "en", "dans", "pour", "par", "sur", "de", "du", "à", "au", "aux", "ce", "ces", "cette", "avec", "the", "the", "the", "a", "a", "some", "and", "in", "in", "for", "by", "on", "of", "of the", "to", "to the", "to the", "this", "these", "this", "with", data.Nom, "paroles", "parole", "lyrics", "lyric", "clip", "video", "audio", "officiel", "officielle", "official"];
+            
+            // Extraction des mots
+            const words = titleText.toLowerCase()
+                .replace(/[^\wÀ-ÿ\s]/gi, ' ')
+                .split(/\s+/)
+                .filter(word => word.length > 2 && !stopWords.includes(word));
+            
+            // Comptage des occurrences
+            const wordCounts = {};
+            words.forEach(word => {
+                wordCounts[word] = (wordCounts[word] || 0) + 1;
+            });
+            
+            // Conversion en format attendu par d3-cloud
+            const wordData = Object.keys(wordCounts).map(word => ({
+                text: word,
+                size: 10 + (wordCounts[word] * 5)
+            }));
+            
+            // Limiter à 50 mots maximum pour la performance
+            const topWords = wordData.sort((a, b) => b.size - a.size).slice(0, 50);
+            
+            if (topWords.length === 0) {
+                cloudContainer.innerHTML = '<div class="text-center p-5">Pas assez de données pour générer un nuage de mots</div>';
+                return;
+            }
+            
+            // Créer le nuage de mots
+            const width = cloudContainer.offsetWidth;
+            const height = 300;
+            
+            try {
+                const layout = d3.layout.cloud()
+                    .size([width, height])
+                    .words(topWords)
+                    .padding(5)
+                    .rotate(() => ~~(Math.random() * 2) * 90)
+                    .fontSize(d => d.size)
+                    .on("end", draw);
+                
+                layout.start();
+                
+                function draw(words) {
+                    cloudContainer.innerHTML = "";
+                    
+                    d3.select("#wordCloud")
+                        .append("svg")
+                        .attr("width", layout.size()[0])
+                        .attr("height", layout.size()[1])
+                        .append("g")
+                        .attr("transform", `translate(${layout.size()[0] / 2},${layout.size()[1] / 2})`)
+                        .selectAll("text")
+                        .data(words)
+                        .enter()
+                        .append("text")
+                        .style("font-size", d => `${d.size}px`)
+                        .style("fill", () => `hsl(${Math.random() * 360}, 70%, 50%)`)
+                        .attr("text-anchor", "middle")
+                        .attr("transform", d => `translate(${d.x}, ${d.y}) rotate(${d.rotate})`)
+                        .text(d => d.text);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la création du nuage de mots:", error);
+                cloudContainer.innerHTML = '<div class="text-center p-5">Erreur lors de la génération du nuage de mots</div>';
+            }
+        }
+
+        // Fonctions utilitaires
+        function truncateString(str, length) {
+            if (!str) return '';
+            return str.length > length ? str.substring(0, length - 3) + '...' : str;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num;
+            }
+        }
+        
+    </script>
+</body>
+</html>
