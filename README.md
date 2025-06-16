@@ -52,8 +52,7 @@ Projet-WebScrapping-avec-Python_TP1-main/
 1. **Cloner le dépôt**
 
 ```bash
-git clone <lien_du_repo>
-cd Projet-WebScrapping-avec-Python_TP1-main
+git clone https://github.com/OlivierGBONOU/Projet-WebScrapping-avec-Python_TP1.git
 ```
 
 2. **Lancer les services**
