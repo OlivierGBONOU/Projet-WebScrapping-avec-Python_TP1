@@ -86,7 +86,7 @@ Le projet inclut une configuration prête à l’emploi de **Prometheus** et un 
 
 ## 📌 Auteurs
 
-* Projet réalisé par GBONOU Olivier.
+* Projet réalisé par AGBOGLA Richard et GBONOU Olivier.
 
 ## 📄 Licence
 
